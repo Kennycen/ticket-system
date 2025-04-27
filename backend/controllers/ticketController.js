@@ -7,68 +7,155 @@ const createTicket = async (req, res) => {
   try {
     const { name, email, description } = req.body;
 
+    // Validate required fields
     if (!name || !email || !description) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing details" });
+      console.log('Validation failed - missing fields');
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+        details: {
+          name: !name ? "Name cannot be empty" : null,
+          email: !email ? "Email cannot be empty" : null,
+          description: !description ? "Description cannot be empty" : null
+        }
+      });
     }
 
-    // Use the Ticket class to create a new ticket object
-    const newTicket = new Ticket({ name, email, description });
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      console.log('Validation failed - invalid email');
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format"
+      });
+    }
 
-    tickets.push(newTicket);
+    try {
+      // Create new ticket
+      const newTicket = new Ticket({
+        name,
+        email,
+        description
+      });
 
-    // Log email in console
-    console.log(`New ticket created for ${name} about ${description}.`);
+      console.log('Created ticket:', newTicket);
 
-    res.status(201).json(newTicket);
+      tickets.push(newTicket);
+
+      return res.status(201).json({
+        success: true,
+        data: newTicket
+      });
+    } catch (ticketError) {
+      console.error('Error creating ticket object:', ticketError);
+      throw ticketError;
+    }
   } catch (error) {
-    console.error("Error created ticket:", error);
-    res.status(500).json({ message: "Server error while creating ticket." });
+    console.error("Error in createTicket:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    return res.status(500).json({
+      success: false,
+      message: "Server error while creating ticket",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
 const getTickets = async (req, res) => {
   try {
-    res.status(200).json(tickets);
+    return res.status(200).json({
+      success: true,
+      data: tickets
+    });
   } catch (error) {
     console.error("Error fetching tickets:", error);
-    res.status(500).json({ message: "Server error while creating ticket." });
+    return res.status(500).json({
+      success: false,
+      message: "Server error while fetching tickets"
+    });
   }
 };
 
 const updateTicket = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, responseMessage } = req.body;
 
-    const ticket = tickets.find((ticket) => ticket.id === id);
+    console.log('Update request received:', {
+      id,
+      status,
+      responseMessage,
+      body: req.body,
+      params: req.params,
+      headers: req.headers
+    });
 
-    if (!ticket) {
-      return res.status(404).json({ message: "Ticket not found." });
-    }
-
-    // Update status if provided
-    if (status && ["new", "in progress", "resolved"].includes(status)) {
-      ticket.status = status;
-    }
-
-    // Add response if provided
-    if (responseMessage) {
-      if (!ticket.responses) {
-        ticket.responses = [];
-      }
-      ticket.responses.push({
-        message: responseMessage,
-        createdAt: new Date().toISOString(),
+    if (!status && !responseMessage) {
+      console.log('Validation failed: No status or response message provided');
+      return res.status(400).json({
+        success: false,
+        message: "Either status or response message is required"
       });
     }
 
-    // Log email in console
-    console.log(`Ticket for ${ticket.name} updated to ${status} status.`);
+    // Convert both IDs to strings for comparison
+    const ticketIndex = tickets.findIndex((ticket) => String(ticket.id) === String(id));
+
+    console.log('Found ticket index:', ticketIndex);
+    console.log('Current tickets:', tickets);
+
+    if (ticketIndex === -1) {
+      console.log('Ticket not found:', id);
+      return res.status(404).json({
+        success: false,
+        message: "Ticket not found"
+      });
+    }
+
+    if (status) {
+      if (!["new", "in progress", "resolved"].includes(status)) {
+        console.log('Invalid status provided:', status);
+        return res.status(400).json({
+          success: false,
+          message: "Invalid status. Must be one of: new, in progress, resolved"
+        });
+      }
+      tickets[ticketIndex].status = status;
+    }
+
+    if (responseMessage) {
+      if (!tickets[ticketIndex].responses) {
+        tickets[ticketIndex].responses = [];
+      }
+      tickets[ticketIndex].responses.push({
+        message: responseMessage,
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    tickets[ticketIndex].updatedAt = new Date().toISOString();
+
+    console.log('Ticket updated successfully:', tickets[ticketIndex]);
+
+    return res.status(200).json({
+      success: true,
+      data: tickets[ticketIndex]
+    });
   } catch (error) {
-    console.error("Error updating ticket:", error);
-    res.status(500).json({ message: "Server error while creating ticket." });
+    console.error("Error updating ticket:", {
+      message: error.message,
+      stack: error.stack,
+      body: req.body,
+      params: req.params
+    });
+    return res.status(500).json({
+      success: false,
+      message: "Server error while updating ticket"
+    });
   }
 };
 

@@ -7,8 +7,8 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: true, 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   credentials: true
 }));
 app.use(express.json());
@@ -26,7 +26,8 @@ app.use((err, req, res, next) => {
   console.error('Error details:', {
     message: err.message,
     stack: err.stack,
-    body: req.body
+    body: req.body,
+    headers: req.headers
   });
   res.status(500).json({ 
     error: 'Something went wrong!',

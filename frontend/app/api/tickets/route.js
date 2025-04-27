@@ -10,17 +10,36 @@ export async function GET() {
     return NextResponse.json(response.data);
   } catch (error) {
     console.error('Error fetching tickets:', error);
-    return NextResponse.json({ error: 'Failed to fetch tickets' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch tickets', details: error.response?.data },
+      { status: error.response?.status || 500 }
+    );
   }
 }
 
 export async function POST(request) {
   try {
     const body = await request.json();
+    
+    // Validate request body
+    if (!body.name || !body.email || !body.description) {
+      return NextResponse.json(
+        { error: 'Missing required fields', details: {
+          name: !body.name ? 'Name is required' : null,
+          email: !body.email ? 'Email is required' : null,
+          description: !body.description ? 'Description is required' : null
+        }},
+        { status: 400 }
+      );
+    }
+
     const response = await axios.post(`${BACKEND_URL}/api/tickets`, body);
     return NextResponse.json(response.data);
   } catch (error) {
     console.error('Error creating ticket:', error);
-    return NextResponse.json({ error: 'Failed to create ticket' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create ticket' },
+      { status: 500 }
+    );
   }
 }

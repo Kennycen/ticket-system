@@ -3,7 +3,7 @@ import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import StatusBadge from '@/components/StatusBadge'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { getTickets, updateTicket } from '@/lib/api'
 
 const TicketDetail = () => {
@@ -121,7 +121,7 @@ const TicketDetail = () => {
 
           <div className="border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Conversation History</h2>
-            {ticket.responses.length === 0 ? (
+            {!ticket?.responses || ticket.responses.length === 0 ? (
               <p className="text-gray-500">No responses yet.</p>
             ) : (
               <div className="space-y-4">
@@ -140,7 +140,7 @@ const TicketDetail = () => {
             <form onSubmit={handleSubmitResponse} className="space-y-4">
               <textarea
                 value={responseMessage}
-                onChange={(e) => setResponse(e.target.value)}
+                onChange={(e) => setResponseMessage(e.target.value)}
                 placeholder="Type your response here..."
                 rows={5}
                 required

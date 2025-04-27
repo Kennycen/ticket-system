@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { getTickets } from '@/lib/api'
+import StatusBadge from './StatusBadge'
 
 const TicketList = () => {
   const router = useRouter();
@@ -77,7 +78,7 @@ const TicketList = () => {
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="font-medium">
-                  <Link href={`/admin/${ticket.id}`} className="hover:underline">
+                  <Link href={`/admin/tickets/${ticket.id}`} className="hover:underline">
                     Ticket #{ticket.id} - {ticket.name}
                   </Link>
                 </h3>
@@ -90,7 +91,7 @@ const TicketList = () => {
               <div className="flex flex-col items-end gap-2">
                 <StatusBadge status={ticket.status} />
                 <button 
-                  onClick={() => router.push(`/admin/${ticket.id}`)}
+                  onClick={() => router.push(`/admin/tickets/${ticket.id}`)}
                   className="border rounded-md px-3 py-1 text-sm hover:bg-gray-50 cursor-pointer"
                 >
                   View Details
@@ -101,7 +102,7 @@ const TicketList = () => {
         ))
       )}
     </div>
-  )
-}
+  );
+};
 
-export default TicketList
+export default TicketList;

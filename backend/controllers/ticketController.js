@@ -3,9 +3,6 @@ import { Ticket } from "../models/ticket.js";
 // In memory array to store tickets
 let tickets = [];
 
-// Helper to generate a unique ticket ID
-const generatedId = () => Date.now().toString();
-
 const createTicket = async (req, res) => {
   try {
     const { name, email, description } = req.body;

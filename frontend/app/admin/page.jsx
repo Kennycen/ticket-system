@@ -14,7 +14,7 @@ const Admin = () => {
     const fetchTickets = async () => {
       try {
         const response = await getTickets();
-        setTickets(response.data); // ✅ Set only the actual array of tickets
+        setTickets(response.data); 
       } catch (error) {
         console.error("Error fetching tickets:", error);
         setError("Failed to fetch tickets.");

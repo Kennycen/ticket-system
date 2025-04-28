@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import axios from 'axios';
 
-// Use the environment variable, fallback to Render URL for production
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://ticket-system-backend.onrender.com';
 
 export async function GET() {

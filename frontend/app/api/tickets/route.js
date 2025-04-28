@@ -33,7 +33,12 @@ export async function POST(request) {
       );
     }
 
-    const response = await axios.post(`${BACKEND_URL}/api/tickets`, body);
+    const response = await axios.post(`${BACKEND_URL}/api/tickets`, body, {
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+    });
     return NextResponse.json(response.data);
   } catch (error) {
     console.error('Error creating ticket:', error);

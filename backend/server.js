@@ -1,16 +1,21 @@
 import express from 'express';
 import cors from 'cors';
+import 'dotenv/config'
 import ticketRouter from './routes/ticketRoutes.js'; 
+import connectDB from "./config/mongodb.js";
 
 const app = express();
+connectDB();
 
 // Middleware
-app.use(cors({
-  origin: true, 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: ["https://your-frontend-domain.vercel.app"],
+    methods: ["GET", "POST", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Root route
@@ -21,22 +26,8 @@ app.get('/', (req, res) => {
 // API Routes
 app.use('/api', ticketRouter);
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error details:', {
-    message: err.message,
-    stack: err.stack,
-    body: req.body,
-    headers: req.headers
-  });
-  res.status(500).json({ 
-    error: 'Something went wrong!',
-    details: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
-
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

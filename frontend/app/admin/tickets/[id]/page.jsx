@@ -1,104 +1,117 @@
-'use client'
-import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
-import StatusBadge from '@/components/StatusBadge'
-import { useRouter } from 'next/navigation'
-import { getTickets, updateTicket } from '@/lib/api'
+"use client";
+
+import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import StatusBadge from "@/components/StatusBadge";
+import { getTickets, updateTicket } from "@/lib/api";
 
 const TicketDetail = () => {
-  const params = useParams()
-  const ticketId = params.id
+  const params = useParams();
+  const ticketId = params.id;
   const router = useRouter();
-  
+
   const [ticket, setTicket] = useState(null);
-  const [status, setStatus] = useState('');
-  const [responseMessage, setResponseMessage] = useState('')
+  const [status, setStatus] = useState("");
+  const [responseMessage, setResponseMessage] = useState("");
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchTickets = async () => {
+    const fetchTicket = async () => {
       try {
         const allTickets = await getTickets();
-        const foundTicket = allTickets.find((t) => t.id === ticketId);
+        const foundTicket = allTickets.data.find(
+          (t) => t._id === ticketId || t.id === ticketId
+        );
 
         if (foundTicket) {
           setTicket(foundTicket);
           setStatus(foundTicket.status);
         } else {
-          setError('Ticket not found.');
+          setError("Ticket not found.");
         }
       } catch (error) {
-        console.error('Error fetching ticket:', error);
-        setError('Failed to load ticket.');
+        console.error("Error fetching ticket:", error);
+        setError("Failed to load ticket.");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchTickets();
+    fetchTicket();
   }, [ticketId]);
 
-    const handleStatusUpdate = async () => {
-      try {
-        setIsSubmitting(true);
-        await updateTicket(ticketId, status, undefined);
-        alert('Ticket status updated successfully');
-        router.refresh();
-      } catch (error) {
-        console.error('Error updating ticket:', error);
-      alert('Failed to update ticket.');
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-
-    const handleSubmitResponse = async (e) => {
-      e.preventDefault();
-      try {
-        setIsSubmitting(true);
-        await updateTicket(ticketId, undefined, responseMessage);
-        alert('Response added successfully');
-        setResponseMessage('');
-        router.refresh();
-      } catch (error) {
-        console.error('Error adding response:', error);
-        alert('Failed to add response.');
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-
-    if (loading) {
-      return <div className="text-center py-10 text-gray-500">Loading ticket details...</div>;
+  const handleStatusUpdate = async () => {
+    try {
+      setIsSubmitting(true);
+      await updateTicket(ticketId, status, undefined);
+      alert("Ticket status updated successfully");
+      router.refresh();
+    } catch (error) {
+      console.error("Error updating ticket:", error);
+      alert("Failed to update ticket.");
+    } finally {
+      setIsSubmitting(false);
     }
-  
-    if (error) {
-      return (
-        <div className="m-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">{error}</h1>
-            <Link href="/" className="bg-black text-white font-semibold p-2 rounded-md cursor-pointer">
-              Back to Main Page
-            </Link>
-          </div>
+  };
+
+  const handleSubmitResponse = async (e) => {
+    e.preventDefault();
+    try {
+      setIsSubmitting(true);
+      await updateTicket(ticketId, undefined, responseMessage);
+      alert("Response added successfully");
+      setResponseMessage("");
+      router.refresh();
+    } catch (error) {
+      console.error("Error adding response:", error);
+      alert("Failed to add response.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-10 text-gray-500">
+        Loading ticket details...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="m-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">{error}</h1>
+          <Link
+            href="/"
+            className="bg-black text-white font-semibold p-2 rounded-md cursor-pointer"
+          >
+            Back to Main Page
+          </Link>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
   return (
-    <div className='m-6'>
+    <div className="m-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Support Ticket Dashboard</h1>
-        <Link href="/" className='bg-black text-white font-semibold p-2 rounded-md cursor-pointer'>
+        <Link
+          href="/"
+          className="bg-black text-white font-semibold p-2 rounded-md cursor-pointer"
+        >
           Back to Main Page
         </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
+          {/* Ticket Information */}
           <div className="border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Ticket Information</h2>
             <div className="space-y-4">
@@ -119,6 +132,7 @@ const TicketDetail = () => {
             </div>
           </div>
 
+          {/* Conversation History */}
           <div className="border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Conversation History</h2>
             {!ticket?.responses || ticket.responses.length === 0 ? (
@@ -126,15 +140,21 @@ const TicketDetail = () => {
             ) : (
               <div className="space-y-4">
                 {ticket.responses.map((resp, index) => (
-                  <div key={index} className="border-b pb-4 last:border-0 last:pb-0">
+                  <div
+                    key={index}
+                    className="border-b pb-4 last:border-0 last:pb-0"
+                  >
                     <p className="whitespace-pre-wrap">{resp.message}</p>
-                    <p className="text-xs text-gray-500 mt-2">{new Date(resp.createdAt).toLocaleString()}</p>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {new Date(resp.createdAt).toLocaleString()}
+                    </p>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
+          {/* Add Response Form */}
           <div className="border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Add Response</h2>
             <form onSubmit={handleSubmitResponse} className="space-y-4">
@@ -147,8 +167,8 @@ const TicketDetail = () => {
                 className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-black"
               />
               <div className="flex justify-end gap-2">
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isSubmitting}
                   className="bg-black text-white font-semibold px-4 py-2 rounded-md disabled:opacity-50"
                 >
@@ -159,6 +179,7 @@ const TicketDetail = () => {
           </div>
         </div>
 
+        {/* Ticket Status */}
         <div>
           <div className="border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4">Ticket Status</h2>
@@ -186,14 +207,14 @@ const TicketDetail = () => {
                 disabled={status === ticket.status || isSubmitting}
                 onClick={handleStatusUpdate}
               >
-                {isSubmitting ? 'Updating...' : 'Update Status'}
+                {isSubmitting ? "Updating..." : "Update Status"}
               </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TicketDetail
+export default TicketDetail;

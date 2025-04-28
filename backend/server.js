@@ -7,24 +7,11 @@ import connectDB from "./config/mongodb.js";
 const app = express();
 connectDB();
 
-// CORS Setup
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  "http://localhost:3000", 
-];
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: "*", 
     methods: ["GET", "POST", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-    credentials: true,
   })
 );
 app.use(express.json());
